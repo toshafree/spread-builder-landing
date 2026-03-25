@@ -1,0 +1,785 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Spread Insight — Конструктор спредов</title>
+  <style>
+    :root {
+      --bg: #0b0d14;
+      --panel: #121622;
+      --panel-2: #171c2b;
+      --line: rgba(255,255,255,0.08);
+      --text: #f4f7fb;
+      --muted: #a8b0c2;
+      --accent: #2d8cff;
+      --accent-2: #1a6dd8;
+      --good: #2dd4bf;
+      --max: 1120px;
+      --radius: 20px;
+      --shadow: 0 20px 60px rgba(0,0,0,0.35);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(45,140,255,0.18), transparent 28%),
+        radial-gradient(circle at top left, rgba(45,212,191,0.10), transparent 20%),
+        var(--bg);
+      color: var(--text);
+    }
+
+    .container {
+      width: min(var(--max), calc(100% - 40px));
+      margin: 0 auto;
+    }
+
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(12px);
+      background: rgba(11,13,20,0.72);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 14px 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+
+    .brand-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--good), var(--accent));
+      box-shadow: 0 0 20px rgba(45,140,255,0.5);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 20px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .nav-links a,
+    .brand,
+    .button,
+    .link-button { text-decoration: none; color: inherit; }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      height: 44px;
+      padding: 0 18px;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      font-weight: 600;
+      transition: 0.18s ease;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .button-primary {
+      background: linear-gradient(180deg, var(--accent), var(--accent-2));
+      color: white;
+      box-shadow: 0 10px 30px rgba(45,140,255,0.28);
+    }
+
+    .button-primary:hover { transform: translateY(-1px); }
+
+    .button-secondary {
+      border-color: var(--line);
+      background: rgba(255,255,255,0.03);
+      color: var(--text);
+    }
+
+    .hero {
+      padding: 68px 0 44px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 34px;
+      align-items: center;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(45,140,255,0.18);
+      background: rgba(45,140,255,0.09);
+      color: #cfe2ff;
+      font-size: 13px;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(36px, 5vw, 60px);
+      line-height: 1.04;
+      letter-spacing: -0.03em;
+      font-weight: 600;
+      max-width: 760px;
+    }
+
+    .hero p {
+      margin: 24px 0 0;
+      font-size: 18px;
+      line-height: 1.7;
+      color: var(--muted);
+      max-width: 680px;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 28px;
+    }
+
+    .hero-points {
+      margin-top: 26px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .chip {
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.03);
+      color: #d5dcec;
+      font-size: 14px;
+    }
+
+    .frame {
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      padding: 12px;
+      box-shadow: var(--shadow);
+      width: 100%;
+    }
+
+    .window {
+      overflow: hidden;
+      background: #0f1320;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .window-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      color: #dbe5f5;
+      font-size: 13px;
+      background: rgba(255,255,255,0.02);
+    }
+
+    .dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .dots span {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.24);
+    }
+
+    .window-body {
+      position: relative;
+      background:
+        linear-gradient(180deg, rgba(45,140,255,0.06), transparent 30%),
+        #0f1320;
+    }
+
+    .window-body img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .window-overlay {
+      position: absolute;
+      left: 18px;
+      bottom: 18px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .overlay-card {
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(10,14,24,0.78);
+      border: 1px solid rgba(255,255,255,0.10);
+      backdrop-filter: blur(8px);
+      font-size: 13px;
+      color: #d9e3f2;
+    }
+
+    section {
+      padding: 36px 0;
+    }
+
+    .section-head {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 20px;
+      align-items: end;
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: clamp(26px, 3vw, 38px);
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      font-weight: 600;
+    }
+
+    .section-head p,
+    .muted {
+      margin: 16px 0 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 22px;
+      transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(45,140,255,0.28);
+      box-shadow: 0 18px 42px rgba(0,0,0,0.22);
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+    }
+
+    .card h3 {
+      margin: 0 0 12px;
+      font-size: 18px;
+      letter-spacing: -0.01em;
+      font-weight: 600;
+    }
+
+    .card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    .badge-soon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: rgba(45,140,255,0.12);
+      border: 1px solid rgba(45,140,255,0.2);
+      color: #cfe2ff;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      text-transform: uppercase;
+      margin-top: 12px;
+      width: fit-content;
+    }
+
+    .market-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .market-card {
+      padding: 20px;
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+      transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    }
+
+    .market-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(45,212,191,0.24);
+      box-shadow: 0 18px 42px rgba(0,0,0,0.22);
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+    }
+
+    .market-card h3 {
+      margin: 0 0 14px;
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    .market-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    .examples-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .example-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 220px;
+      padding: 22px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    }
+
+    .example-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(255,199,89,0.42);
+      box-shadow: 0 18px 42px rgba(0,0,0,0.22);
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+    }
+
+    .example-symbols {
+      margin: 0 0 10px;
+      color: #8f98ab;
+      font-size: 14px;
+      line-height: 1.5;
+      text-transform: uppercase;
+    }
+
+    .example-card h3 {
+      margin: 0 0 10px;
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    .example-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    .example-footer {
+      margin-top: 22px;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .example-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 102px;
+      height: 36px;
+      padding: 0 14px;
+      border-radius: 10px;
+      border: 1px solid #ffba30;
+      color: #ffcf6d;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+    }
+
+    .example-card:hover .example-button {
+      background: rgba(255,186,48,0.12);
+      border-color: #ffcf6d;
+      color: #ffe29d;
+    }
+
+    .grid-divider {
+      grid-column: 1 / -1;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.16), transparent);
+      margin: 2px 0;
+    }
+
+    .cta {
+      padding: 22px;
+      border-radius: 24px;
+      background: linear-gradient(135deg, rgba(45,140,255,0.15), rgba(45,212,191,0.08));
+      border: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .cta h3 {
+      margin: 0 0 8px;
+      font-size: 26px;
+      letter-spacing: -0.02em;
+    }
+
+    .cta p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .cta .button {
+      min-width: 196px;
+      padding-inline: 24px;
+    }
+
+    footer {
+      padding: 28px 0 54px;
+      color: #8190a9;
+      font-size: 14px;
+    }
+
+    @media (max-width: 1024px) {
+      .hero-grid,
+      .grid-3,
+      .market-grid,
+      .examples-grid,
+      .section-head {
+        grid-template-columns: 1fr;
+      }
+
+      .cta {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .nav-links { display: none; }
+      .hero { padding-top: 44px; }
+      .container { width: min(var(--max), calc(100% - 24px)); }
+      h1 { font-size: 36px; }
+      .hero p { font-size: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="#top">
+        <span class="brand-dot"></span>
+        <span>Spread Insight</span>
+      </a>
+      <div class="nav-links">
+        <a href="#product">Продукт</a>
+        <a href="#markets">Биржи и инструменты</a>
+        <a href="#examples">Примеры</a>
+        <a href="#meeting">Встреча</a>
+      </div>
+      <a class="button button-secondary js-open-chat" href="#">Назначить встречу</a>
+    </div>
+  </div>
+
+  <main id="top">
+    <section class="hero container">
+      <div class="hero-grid">
+        <div>
+          <div class="eyebrow">Конструктор спредов для арбитража</div>
+          <h1>Spread Insight - это Trading View для арбитража</h1>
+          <p>
+            Spread Insight объединяет график, спецификации инструментов, справедливое значение спреда,
+            расчет сделки, уведомления и бэктест. Покажем на встрече как.
+          </p>
+          <div class="hero-actions">
+            <a class="button button-primary js-open-chat" href="#">Назначить встречу</a>
+          </div>
+         
+        </div>
+
+        <div class="frame">
+          <div class="window">
+            <div class="window-top">
+              <div class="dots"><span></span><span></span><span></span></div>
+              <div>Пример экрана Spread Builder</div>
+              <div>preview</div>
+            </div>
+            <div class="window-body">
+              <img src="4056ddef-3a7d-434d-a2a6-b3f5dab125d4.png" alt="Spread Insight UI preview" />
+              <div class="window-overlay">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="markets">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>Доступные биржи и инструменты</h2>
+            <p>Обычные инструменты с основных площадок плюс интересные возможности на крипте</p>
+          </div>
+        </div>
+
+        <div class="market-grid">
+          <article class="market-card">
+            <h3>MOEX</h3>
+            <p>Акции, ETF, валюта, срочные и вечные фьючерсы, спреды</p>
+          </article>
+          <article class="market-card">
+            <h3>CME</h3>
+            <p>Фьючерсы на ресурсы, валюту, крипту</p>
+          </article>
+          <article class="market-card">
+            <h3>NYSE</h3>
+            <p>ETF</p>
+          </article>
+          <article class="market-card">
+            <h3>Crypto</h3>
+            <p>Фьючерсы, спот, токенизированные акции и ресурсы.</p>
+          </article>
+          <article class="market-card">
+            <h3>Forex</h3>
+            <p>Валюты</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="examples">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>Примеры формул спредов</h2>
+            <p>Несколько идей, которые можно открыть в конструкторе и посмотреть как отправную точку для своих сценариев.</p>
+          </div>
+        </div>
+
+        <div class="examples-grid">
+          <a class="example-card" href="https://spread-i.online/constructor?example=1" target="_blank" rel="noopener noreferrer">
+            <div>
+              <h3>Серебро MOEX/CME</h3>
+              <p class="example-symbols">COMEX:SIH6 MOEX:SIH6</p>
+              <p>Межбиржевой спред между фьючерсами на серебро на MOEX и CME.</p>
+            </div>
+            <div class="example-footer"><span class="example-button">Открыть</span></div>
+          </a>
+          <a class="example-card" href="https://spread-i.online/constructor?example=1" target="_blank" rel="noopener noreferrer">
+            <div>
+              <h3>Сбербанк фьючерс/акция</h3>
+              <p class="example-symbols">MOEX:SRH6 MOEX:SBER</p>
+              <p>Спред фьючерс против базового актива с примером расчета справедливого значения спреда.</p>
+            </div>
+            <div class="example-footer"><span class="example-button">Открыть</span></div>
+          </a>
+          <a class="example-card" href="https://spread-i.online/constructor?example=1" target="_blank" rel="noopener noreferrer">
+            <div>
+              <h3>Календарник на долларе</h3>
+              <p class="example-symbols">MOEX:SiH6 MOEX:SiM6</p>
+              <p>Спред фьючерс дальний фьючерс против ближнего.</p>
+            </div>
+            <div class="example-footer"><span class="example-button">Открыть</span></div>
+          </a>
+          <a class="example-card" href="https://spread-i.online/constructor?example=1" target="_blank" rel="noopener noreferrer">
+            <div>
+              <h3>Валютный тройник MOEX/FX</h3>
+              <p class="example-symbols">MOEX:SiH6 MOEX:EuH6 ONEZERO:EURUSD</p>
+              <p>Спред между фьючерсами EURRUB и USDRUB на MOEX и парой EURUSD на FOREX.</p>
+            </div>
+            <div class="example-footer"><span class="example-button">Открыть</span></div>
+          </a>
+          <a class="example-card" href="https://spread-i.online/constructor?example=1" target="_blank" rel="noopener noreferrer">
+            <div>
+              <h3>Фьючерсы MOEX/CME на индекс DJ</h3>
+              <p class="example-symbols">MOEX:DJH6 CBOT:MYMH6</p>
+              <p>Спред между фьючерсами MOEX и CME на ETF фонд по индексу Dow Jones.</p>
+            </div>
+            <div class="example-footer"><span class="example-button">Открыть</span></div>
+          </a>
+          <a class="example-card" href="https://spread-i.online/constructor?example=1" target="_blank" rel="noopener noreferrer">
+            <div>
+              <h3>Юань срочный против вечного</h3>
+              <p class="example-symbols">MOEX:CNYRUBF MOEX:CRH6</p>
+              <p>Спред между срочным и вечным фьючерсом на юань с примером расчета справедливого значения спреда.</p>
+            </div>
+            <div class="example-footer"><span class="example-button">Открыть</span></div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section id="product">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>Что Spread Insight дает трейдеру</h2>
+            <p>Коротко: меньше ручной сборки, меньше ошибок в механике, быстрее переход от идеи к решению.</p>
+          </div>
+        </div>
+
+        <div class="grid-3">
+          <article class="card">
+            <h3>Собрать любой спред</h3>
+            <p>Акции, фьючерсы, ETF, валюты и крипта в одной формуле и на одном графике.</p>
+          </article>
+          <article class="card">
+            <h3>Отобразить справедливый спред</h3>
+            <p>Не только увидеть отклонение, но и оценить его с учетом стоимости денег и фандинга.</p>
+          </article>
+          <article class="card">
+            <h3>Спецификации под рукой</h3>
+            <p>Лотность, шаг цены, дата экспирации инструментов можно посмотреть тут же — без необходимости искать их на сайте биржи</p>
+          </article>
+          
+          <article class="card">
+            <h3>Столько окон, сколько нужно</h3>
+            <p>Выкладывайте на экран столько графиков, сколько вам будет комфортно</p>
+          </article>
+           <article class="card">
+            <h3>Обсудить идею с ИИ Ассистентом</h3>
+            <p>ИИ Ассистент поможет найти идеи, подобрать инструменты и собрать формулу спреда</p>
+          </article>
+
+          <div class="grid-divider" aria-hidden="true"></div>
+
+          <article class="card">
+            <h3>Посчитать возможную прибыль <span class="badge-soon">Скоро</span></h3>
+            <p>Подбирайте правильное соотношение ног под заданный объем позиции. Считайте потенциальную прибыль с учетом комиссий, проскальзываний и остальных затрат </p>
+          </article>
+          
+          <article class="card">
+            <h3>Проверить гипотезы на истории <span class="badge-soon">Скоро</span></h3>
+            <p>Возможность посмотреть как спред вел себя, например, в окрестности экспирации в прошлом</p>
+          </article>
+          <article class="card">
+            <h3>Настроить уведомления <span class="badge-soon">Скоро</span></h3>
+            <p>Создавайте алерты на отклонения или возврат спредов к справедливой стоимости</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+     <section id="team">
+      <div class="container">
+     <div class="section-head">
+          <div>
+            <h2>Spread Insight дает команде</h2>
+            <p>Коротко: Совместная работа со спредами</p>
+          </div>
+        </div>
+
+        <div class="grid-3">
+           <article class="card">
+            <h3>Командный списк спредов <span class="badge-soon">Скоро</span></h3>
+            <p>Создавайте и делитесь списками спредов внутри команды — единое пространство идей и сделок.</p>
+          </article>
+           <article class="card">
+            <h3>Делитесь мыслями по спредам внутри команды <span class="badge-soon">Скоро</span></h3>
+            <p>Обсуждайте идеи прямо у спреда — комментарии, заметки и аргументы в одном месте, без чатов и потери контекста.</p>
+          </article>
+           <article class="card">
+            <h3> Быстрый онбординг<span class="badge-soon">Скоро</span></h3>
+            <p>Новый трейдер сразу видит рабочие спреды и подход команды, а вопросы можно задать ИИ-ассистенту — меньше времени на вход.</p>
+          </article>
+         
+        </div>
+      </div>
+    </section>
+
+    <section id="meeting">
+      <div class="container">
+        <div class="cta">
+          <div>
+            <h3>Поговорим о том, как помочь вам больше заработывать</h3>
+            <p>Покажем, чем Spread Insight уже может вам помочь, обсудим, какие функции помогут вам зарабатывать больше денег</p>
+          </div>
+          <a class="button button-primary js-open-chat" href="#">Назначить встречу</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">Spread Insight · Конструктор спредов для проп-команд и арбитражных трейдеров</div>
+  </footer>
+  <script src="//code.jivo.ru/widget/KNUCXaIKOS" async></script>
+  <script>
+    function openJivoChat() {
+      if (window.jivo_api) {
+        if (typeof window.jivo_api.open === "function") {
+          window.jivo_api.open();
+          return true;
+        }
+        if (typeof window.jivo_api.openChat === "function") {
+          window.jivo_api.openChat();
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function tryOpenJivoChat(attempt) {
+      if (openJivoChat()) {
+        return;
+      }
+
+      if (attempt > 0) {
+        window.setTimeout(function () {
+          tryOpenJivoChat(attempt - 1);
+        }, 400);
+        return;
+      }
+
+      window.location.hash = "meeting";
+    }
+
+    document.querySelectorAll(".js-open-chat").forEach(function (button) {
+      button.addEventListener("click", function (event) {
+        event.preventDefault();
+        tryOpenJivoChat(6);
+      });
+    });
+  </script>
+</body>
+</html>
