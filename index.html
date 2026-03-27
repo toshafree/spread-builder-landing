@@ -361,6 +361,40 @@
       font-size: 15px;
     }
 
+    .exchange-list {
+      margin-top: 24px;
+      padding: 20px 22px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+    }
+
+    .exchange-list h3 {
+      margin: 0 0 14px;
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    .exchange-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .exchange-chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.03);
+      color: #dbe5f5;
+      font-size: 14px;
+      line-height: 1;
+    }
+
     .examples-grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -519,7 +553,7 @@
         <a href="#examples">Примеры</a>
         <a href="#meeting">Встреча</a>
       </div>
-      <a class="button button-secondary js-open-chat" href="#">Назначить встречу</a>
+      <a class="button button-secondary" href="https://calendly.com/7641109/30min" target="_blank" rel="noopener noreferrer">Назначить встречу</a>
     </div>
   </div>
 
@@ -534,7 +568,7 @@
             расчет сделки, уведомления и бэктест. Покажем на встрече, как это работает.
           </p>
           <div class="hero-actions">
-            <a class="button button-primary js-open-chat" href="#">Назначить встречу</a>
+            <a class="button button-primary" href="https://calendly.com/7641109/30min" target="_blank" rel="noopener noreferrer">Назначить встречу</a>
           </div>
          
         </div>
@@ -586,6 +620,19 @@
             <h3>Forex</h3>
             <p>Валюты.</p>
           </article>
+        </div>
+
+        <div class="exchange-list">
+          <h3>Поддерживаемые криптобиржи</h3>
+          <div class="exchange-chips">
+            <span class="exchange-chip">Binance</span>
+            <span class="exchange-chip">Bybit</span>
+            <span class="exchange-chip">Bitget</span>
+            <span class="exchange-chip">Gate</span>
+            <span class="exchange-chip">MEXC</span>
+            <span class="exchange-chip">Kraken</span>
+            <span class="exchange-chip">Finam-OTC</span>
+          </div>
         </div>
       </div>
     </section>
@@ -699,6 +746,10 @@
             <h3>Настроить уведомления <span class="badge-soon">Скоро</span></h3>
             <p>Создавайте алерты на отклонения или возврат спредов к справедливой стоимости.</p>
           </article>
+          <article class="card">
+            <h3>Передать сделку на исполнение <span class="badge-soon">Скоро</span></h3>
+            <p>Передача данных для формирования заявок по ссылке в терминал Finam Trade.</p>
+          </article>
         </div>
       </div>
     </section>
@@ -737,7 +788,7 @@
             <h3>Давайте обсудим, как Spread Insight может улучшить организацию торгового процесса</h3>
             <p>Покажем, чем Spread Insight уже может вам помочь, и обсудим, какие функции помогут вам лучше организовать арбитражную торговлю.</p>
           </div>
-          <a class="button button-primary js-open-chat" href="#">Назначить встречу</a>
+          <a class="button button-primary" href="https://calendly.com/7641109/30min" target="_blank" rel="noopener noreferrer">Назначить встречу</a>
         </div>
       </div>
     </section>
@@ -746,43 +797,5 @@
   <footer>
     <div class="container">Spread Insight · Конструктор спредов для проп-команд и арбитражных трейдеров</div>
   </footer>
-  <script src="//code.jivo.ru/widget/KNUCXaIKOS" async></script>
-  <script>
-    function openJivoChat() {
-      if (window.jivo_api) {
-        if (typeof window.jivo_api.open === "function") {
-          window.jivo_api.open();
-          return true;
-        }
-        if (typeof window.jivo_api.openChat === "function") {
-          window.jivo_api.openChat();
-          return true;
-        }
-      }
-      return false;
-    }
-
-    function tryOpenJivoChat(attempt) {
-      if (openJivoChat()) {
-        return;
-      }
-
-      if (attempt > 0) {
-        window.setTimeout(function () {
-          tryOpenJivoChat(attempt - 1);
-        }, 400);
-        return;
-      }
-
-      window.location.hash = "meeting";
-    }
-
-    document.querySelectorAll(".js-open-chat").forEach(function (button) {
-      button.addEventListener("click", function (event) {
-        event.preventDefault();
-        tryOpenJivoChat(6);
-      });
-    });
-  </script>
 </body>
 </html>
