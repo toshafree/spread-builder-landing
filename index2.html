@@ -1,0 +1,880 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Spread Insight — инструмент для команд, работающих со спредами</title>
+  <style>
+    :root {
+      --bg: #0b0d14;
+      --panel: #121622;
+      --panel-2: #171c2b;
+      --line: rgba(255,255,255,0.08);
+      --text: #f4f7fb;
+      --muted: #a8b0c2;
+      --accent: #2d8cff;
+      --accent-2: #1a6dd8;
+      --good: #2dd4bf;
+      --max: 1120px;
+      --radius: 20px;
+      --shadow: 0 20px 60px rgba(0,0,0,0.35);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(45,140,255,0.18), transparent 28%),
+        radial-gradient(circle at top left, rgba(45,212,191,0.10), transparent 20%),
+        var(--bg);
+      color: var(--text);
+    }
+
+    .container {
+      width: min(var(--max), calc(100% - 40px));
+      margin: 0 auto;
+    }
+
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(12px);
+      background: rgba(11,13,20,0.72);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 14px 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .brand-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--good), var(--accent));
+      box-shadow: 0 0 20px rgba(45,140,255,0.5);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 20px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 44px;
+      padding: 0 18px;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      font-weight: 600;
+      transition: 0.18s ease;
+      cursor: pointer;
+      white-space: nowrap;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .button-primary {
+      background: linear-gradient(180deg, var(--accent), var(--accent-2));
+      color: white;
+      box-shadow: 0 10px 30px rgba(45,140,255,0.28);
+    }
+
+    .button-primary:hover { transform: translateY(-1px); }
+
+    .button-secondary {
+      border-color: var(--line);
+      background: rgba(255,255,255,0.03);
+      color: var(--text);
+    }
+
+    main section {
+      padding: 36px 0;
+    }
+
+    .hero {
+      padding: 68px 0 44px;
+    }
+
+    .hero-grid,
+    .split-grid {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 34px;
+      align-items: center;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(38px, 5vw, 60px);
+      line-height: 1.03;
+      letter-spacing: -0.03em;
+      font-weight: 600;
+      max-width: 760px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: clamp(26px, 3vw, 38px);
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      font-weight: 600;
+    }
+
+    .hero-copy p,
+    .section-head p,
+    .muted {
+      margin: 16px 0 0;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 16px;
+    }
+
+    .hero-copy p {
+      margin-top: 24px;
+      font-size: 18px;
+      max-width: 680px;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 28px;
+    }
+
+    .exchange-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .exchange-chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.03);
+      color: #dbe5f5;
+      font-size: 14px;
+      line-height: 1;
+    }
+
+    .hero-highlight {
+      color: oklch(0.865 0.127 207.078);
+    }
+
+    .frame {
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      padding: 12px;
+      box-shadow: var(--shadow);
+      width: 100%;
+    }
+
+    .window {
+      overflow: hidden;
+      background: #0f1320;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .window-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      color: #dbe5f5;
+      font-size: 13px;
+      background: rgba(255,255,255,0.02);
+    }
+
+    .dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .dots span {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.24);
+    }
+
+    .window-body img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .section-head {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 20px;
+      align-items: end;
+      margin-bottom: 20px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .card,
+    .focus-card,
+    .discovery-card,
+    .hypothesis-card,
+    .belief-card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 22px;
+      transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    }
+
+    .card:hover,
+    .focus-card:hover,
+    .discovery-card:hover,
+    .hypothesis-card:hover,
+    .belief-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(45,140,255,0.28);
+      box-shadow: 0 18px 42px rgba(0,0,0,0.22);
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+    }
+
+    .card h3,
+    .focus-card h3,
+    .discovery-card h3 {
+      margin: 0 0 12px;
+      font-size: 18px;
+      letter-spacing: -0.01em;
+      font-weight: 600;
+    }
+
+    .card p,
+    .focus-card p,
+    .discovery-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    .list-card {
+      padding: 22px;
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+    }
+
+    .list-card h3 {
+      margin: 0 0 14px;
+      font-size: 19px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    .list-card ul {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      line-height: 1.8;
+    }
+
+    .list-card li + li {
+      margin-top: 6px;
+    }
+
+    .hypothesis-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .hypothesis-card {
+      padding: 22px;
+    }
+
+    .hypothesis-card h3 {
+      margin: 0 0 18px;
+      font-size: 20px;
+      letter-spacing: -0.02em;
+      font-weight: 600;
+    }
+
+    .hypothesis-block + .hypothesis-block {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .hypothesis-label {
+      margin: 0 0 8px;
+      color: #d9e6ff;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      text-transform: uppercase;
+    }
+
+    .hypothesis-block p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    .belief-card {
+      padding: 24px;
+    }
+
+    .belief-card h3 {
+      margin: 0 0 12px;
+      font-size: 24px;
+      letter-spacing: -0.02em;
+      font-weight: 600;
+    }
+
+    .belief-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.8;
+      font-size: 16px;
+      max-width: 920px;
+    }
+
+    .market-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .market-card {
+      padding: 20px;
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+      transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    }
+
+    .market-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(45,212,191,0.24);
+      box-shadow: 0 18px 42px rgba(0,0,0,0.22);
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+    }
+
+    .market-card h3 {
+      margin: 0 0 14px;
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    .market-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    .exchange-list {
+      margin-top: 24px;
+      padding: 20px 22px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+    }
+
+    .exchange-list h3 {
+      margin: 0 0 14px;
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    .examples-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .example-card {
+      display: block;
+      min-height: 220px;
+      padding: 22px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+      transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    }
+
+    .example-card:hover {
+      border-color: rgba(255,199,89,0.42);
+      box-shadow: 0 18px 42px rgba(0,0,0,0.22);
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+    }
+
+    .example-card h3 {
+      margin: 0 0 10px;
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    .example-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    .example-symbols {
+      margin: 0 0 10px;
+      color: #8f98ab;
+      font-size: 14px;
+      line-height: 1.5;
+      text-transform: uppercase;
+    }
+
+    .cta {
+      padding: 24px;
+      border-radius: 24px;
+      background: linear-gradient(135deg, rgba(45,140,255,0.15), rgba(45,212,191,0.08));
+      border: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .cta h3 {
+      margin: 0 0 8px;
+      font-size: 28px;
+      letter-spacing: -0.02em;
+    }
+
+    .cta p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+      max-width: 760px;
+    }
+
+    .cta .button {
+      min-width: 196px;
+      padding-inline: 24px;
+    }
+
+    footer {
+      padding: 28px 0 54px;
+      color: #8190a9;
+      font-size: 14px;
+    }
+
+    @media (max-width: 1024px) {
+      .hero-grid,
+      .split-grid,
+      .grid-2,
+      .grid-3,
+      .grid-4,
+      .hypothesis-grid,
+      .market-grid,
+      .examples-grid,
+      .section-head {
+        grid-template-columns: 1fr;
+      }
+
+      .cta {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .nav-links { display: none; }
+      .hero { padding-top: 44px; }
+      .container { width: min(var(--max), calc(100% - 24px)); }
+      h1 { font-size: 36px; }
+      .hero-copy p { font-size: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="#top">
+        <span class="brand-dot"></span>
+        <span>Spread Insight</span>
+      </a>
+      <div class="nav-links">
+        <a href="#hypotheses">Гипотезы</a>
+        <a href="#prototype">Бета</a>
+        <a href="#discovery">Разговор</a>
+      </div>
+    </div>
+  </div>
+
+  <main id="top">
+    <section class="hero container">
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <h1><span class="hero-highlight">Spread Insight</span> для команд, работающих со спредами и арбитражными идеями</h1>
+          <p>
+            Мы строим инструмент для проп-компаний, фондов и трейдеров: уже есть сильный прототип и понятные продуктовые гипотезы.
+            Сейчас мы общаемся с командами, чтобы понять, как такой продукт может сделать ваш процесс быстрее, точнее и удобнее в реальной торговой работе.
+          </p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="https://calendly.com/7641109/30min" target="_blank" rel="noopener noreferrer">Назначить встречу</a>
+          </div>
+        </div>
+
+        <div class="frame">
+          <div class="window">
+            <div class="window-top">
+              <div class="dots"><span></span><span></span><span></span></div>
+              <div>Прототип рабочего пространства Spread Insight</div>
+              <div>concept</div>
+            </div>
+            <div class="window-body">
+              <img src="4056ddef-3a7d-434d-a2a6-b3f5dab125d4.png" alt="Прототип интерфейса Spread Insight" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="hypotheses">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>Три ключевые гипотезы, где арбитражный процесс часто теряет эффективность</h2>
+            <p>Ниже три направления, в которые мы сейчас смотрим. Если у вас картина другая, это как раз хороший повод для разговора.</p>
+          </div>
+        </div>
+
+        <div class="hypothesis-grid">
+          <article class="hypothesis-card">
+            <h3>Расчет затрат и оценка прибыли по сделке</h3>
+            <div class="hypothesis-block">
+              <div class="hypothesis-label">Как сейчас</div>
+              <p>Для знакомых спредов трейдер часто считает сделку в голове, и в рутинных сценариях это действительно может работать быстро.</p>
+            </div>
+            <div class="hypothesis-block">
+              <div class="hypothesis-label">Где ошибки и потери</div>
+              <p>В спешке легко ошибиться даже на знакомой связке. Для новых или редких спредов ручная оценка уже становится барьером ко входу или источником неприятных сюрпризов по P&amp;L.</p>
+            </div>
+            <div class="hypothesis-block">
+              <div class="hypothesis-label">Как можем помочь</div>
+              <p>Сделать калькулятор сделки с учетом спецификаций инструментов, комиссий и индивидуальных условий трейдера, чтобы видеть потенциал отклонения в деньгах прямо рядом с графиком.</p>
+            </div>
+          </article>
+          <article class="hypothesis-card">
+            <h3>Поиск и оценка новых арбитражных связок</h3>
+            <div class="hypothesis-block">
+              <div class="hypothesis-label">Как сейчас</div>
+              <p>На известных связках бывают периоды затишья, а часть старых идей со временем перестает работать. Чтобы поддерживать доходность, команде нужно регулярно искать новые варианты.</p>
+            </div>
+            <div class="hypothesis-block">
+              <div class="hypothesis-label">Где ошибки и потери</div>
+              <p>Нужно изучать спецификации, собирать формулу, разбирать механику входа, считать затраты и делать тестовые сделки. Чтобы найти одну сильную идею, приходится перебрать десятки связок.</p>
+            </div>
+            <div class="hypothesis-block">
+              <div class="hypothesis-label">Как можем помочь</div>
+              <p>Ускорить сборку спредов через конструктор и ИИ-ассистента, а первичную оценку делать через калькулятор сделки, чтобы на каждую гипотезу тратилось меньше времени.</p>
+            </div>
+          </article>
+          <article class="hypothesis-card">
+            <h3>Командная работа вокруг спредов</h3>
+            <div class="hypothesis-block">
+              <div class="hypothesis-label">Как сейчас</div>
+              <p>Арбитраж обычно торгуют командами: это ускоряет поиск идей, дает вторую проверку по сделке и помогает масштабировать рабочие наработки внутри desk'а.</p>
+            </div>
+            <div class="hypothesis-block">
+              <div class="hypothesis-label">Где ошибки и потери</div>
+              <p>При передаче связок от эксперта трейдерам часто теряются детали. В обсуждении можно случайно говорить о по-разному собранных спредах и терять единый контекст сделки.</p>
+            </div>
+            <div class="hypothesis-block">
+              <div class="hypothesis-label">Как можем помочь</div>
+              <p>Дать возможность шарить списки спредов на конкретные группы трейдеров, вести обсуждение внутри спреда и сохранять важные торговые детали прямо рядом с идеей.</p>
+            </div>
+          </article>
+          <article class="hypothesis-card">
+            <h3>Есть своя гипотеза? Обсудим её на встрече</h3>
+            <div class="hypothesis-block">
+              <div class="hypothesis-label">Что нам важно</div>
+              <p>Мы не хотим ограничиваться только своими наблюдениями. Часто самое ценное приходит из живого разбора конкретного процесса внутри команды.</p>
+            </div>
+            <div class="hypothesis-block">
+              <div class="hypothesis-label">Что можно принести</div>
+              <p>Вашу текущую механику поиска идей, расчета сделки, обмена контекстом, передачи связок трейдерам или любой участок workflow, который хочется ускорить.</p>
+            </div>
+            <div class="hypothesis-block">
+              <div class="hypothesis-label">Что дадим со своей стороны</div>
+              <p>Покажем прототип, предложим продуктовую рамку и вместе посмотрим, как именно инструмент мог бы сделать ваш процесс сильнее.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="concept">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>Каким мы видим хороший инструмент</h2>
+            <p>Мы хотим построить рабочее место для команд, где спред собирается, оценивается, обсуждается и сопровождается в едином контексте.</p>
+          </div>
+        </div>
+
+        <div class="grid-3">
+          <article class="card">
+            <h3>Рабочее место для спреда</h3>
+            <p>Один интерфейс, в котором удобно собрать идею, увидеть график и не терять структуру сделки по дороге.</p>
+          </article>
+          <article class="card">
+            <h3>Параметры сделки рядом с графиком</h3>
+            <p>Считаем важным держать рядом механику ног, размер позиции, ключевые ограничения и то, что влияет на решение.</p>
+          </article>
+          <article class="card">
+            <h3>Спецификации без переключения контекста</h3>
+            <p>Лотность, шаг цены, экспирации и особенности инструмента должны быть под рукой, а не в отдельном поиске по площадкам.</p>
+          </article>
+          <article class="card">
+            <h3>Оценка сделки до входа</h3>
+            <p>Видим ценность в том, чтобы быстро прикинуть издержки, потенциальный результат и структуру позиции ещё до исполнения.</p>
+          </article>
+          <article class="card">
+            <h3>Набор спредов как рабочий контур команды</h3>
+            <p>Команде полезно не просто хранить формулы, а вести свой живой набор идей, наблюдений и статусов по сделкам.</p>
+          </article>
+          <article class="card">
+            <h3>Обсуждение в контексте сделки</h3>
+            <p>Если заметки, комментарии и аргументы живут рядом со спредом, команда быстрее возвращается к сути решения.</p>
+          </article>
+          <article class="card">
+            <h3>Мониторинг и уведомления</h3>
+            <p>Следующий шаг после анализа: возвращаться к идее в нужный момент, а не держать ее в голове или в случайных напоминаниях.</p>
+          </article>
+          <article class="card">
+            <h3>Историческая проверка сценариев</h3>
+            <p>Для части связок важно быстро понять, как они вели себя раньше и что происходило в условиях, похожих на текущие.</p>
+          </article>
+          <article class="card">
+            <h3>ИИ-ассистент в роли рабочего инструмента</h3>
+            <p>Быстрый способ собрать формулу, задать вопрос по инструменту или пройти по логике сделки прямо в момент анализа.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="prototype">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>Что уже есть в бета-версии Spread Insight</h2>
+          </div>
+        </div>
+
+        <div class="list-card">
+          <h3>Рынки и инструменты</h3>
+          <div class="market-grid">
+            <article class="market-card">
+              <h3>MOEX</h3>
+              <p>Акции, ETF, валюта, срочные и вечные фьючерсы, спреды.</p>
+            </article>
+            <article class="market-card">
+              <h3>CME</h3>
+              <p>Фьючерсы на ресурсы, валюту, крипту.</p>
+            </article>
+            <article class="market-card">
+              <h3>NYSE</h3>
+              <p>ETF.</p>
+            </article>
+            <article class="market-card">
+              <h3>Crypto</h3>
+              <p>Фьючерсы, спот, токенизированные акции и ресурсы.</p>
+            </article>
+            <article class="market-card">
+              <h3>Forex</h3>
+              <p>Валюты.</p>
+            </article>
+          </div>
+
+          <div class="exchange-list">
+            <h3>Поддерживаемые криптобиржи</h3>
+            <div class="exchange-chips">
+              <span class="exchange-chip">Binance</span>
+              <span class="exchange-chip">Bybit</span>
+              <span class="exchange-chip">Bitget</span>
+              <span class="exchange-chip">Gate</span>
+              <span class="exchange-chip">MEXC</span>
+              <span class="exchange-chip">Kraken</span>
+              <span class="exchange-chip">Finam-OTC</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="split-grid" style="margin-top: 16px;">
+          <div class="list-card">
+            <h3>Конструктор спредов и справедливых значений</h3>
+            <p class="muted">Уже сейчас в бета-версии мы движемся к конструктору по произвольным формулам, где рядом со спредом можно держать справедливые значения, стоимость денег и параметры инструментов, влияющие на оценку идеи.</p>
+          </div>
+
+          <div class="frame">
+            <div class="window">
+              <div class="window-top">
+                <div class="dots"><span></span><span></span><span></span></div>
+                <div>Экран бета-версии Spread Insight</div>
+                <div>beta</div>
+              </div>
+              <div class="window-body">
+                <img src="4056ddef-3a7d-434d-a2a6-b3f5dab125d4.png" alt="Экран бета-версии Spread Insight" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="examples">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>Посмотреть, как выглядят конкретные спреды</h2>
+          </div>
+        </div>
+
+        <div class="examples-grid">
+          <div class="example-card">
+            <div>
+              <h3>Серебро MOEX/CME</h3>
+              <p class="example-symbols">COMEX:SIH6 MOEX:SIH6</p>
+              <p>Межбиржевой спред между фьючерсами на серебро на MOEX и CME.</p>
+            </div>
+          </div>
+          <div class="example-card">
+            <div>
+              <h3>Сбербанк фьючерс/акция</h3>
+              <p class="example-symbols">MOEX:SRH6 MOEX:SBER</p>
+              <p>Спред фьючерс против базового актива с примером расчета справедливого значения спреда.</p>
+            </div>
+          </div>
+          <div class="example-card">
+            <div>
+              <h3>Календарник на долларе</h3>
+              <p class="example-symbols">MOEX:SiH6 MOEX:SiM6</p>
+              <p>Спред между ближним и дальним контрактом в понятном сценарии календарной конструкции.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="discovery">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>С кем мы хотим поговорить</h2>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="list-card">
+            <h3>Кому это может быть близко</h3>
+            <ul>
+              <li>Проп-командам и арбитражным desk'ам.</li>
+              <li>Трейдерам, которые работают со спредами и сравнением инструментов.</li>
+              <li>Team lead, head of desk, аналитикам и людям, которые собирают торговый процесс команды.</li>
+              <li>Командам, которым важно не только находить идею, но и быстро доводить её до решения.</li>
+            </ul>
+          </div>
+
+          <div class="list-card">
+            <h3>О чем хотим поговорить</h3>
+            <ul>
+              <li>Как у вас сейчас ищутся и отбираются идеи.</li>
+              <li>Как вы проверяете сделку до входа и что считаете обязательным контекстом.</li>
+              <li>Как внутри команды обсуждаются идеи и фиксируются аргументы.</li>
+              <li>Где текущий workflow действительно теряет время, а где все уже работает нормально.</li>
+              <li>За что в таком инструменте вы реально были бы готовы платить.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="edge">
+      <div class="container">
+        <div class="belief-card">
+          <h3>Платформа должна усиливать команду, а не размывать ее преимущество</h3>
+          <p>Мы строим не витрину общих идей для всего рынка, а рабочую платформу для команд. Наработки, логика торговли, комментарии, собранные списки спредов и внутренний опыт должны накапливаться внутри команды и усиливать именно ее. В таком сценарии платформа не заменяет торговое преимущество, а помогает быстрее его собирать, передавать и масштабировать.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="meeting">
+      <div class="container">
+        <div class="cta">
+          <div>
+            <h3>Давайте обсудим, как такой продукт может сделать ваш процесс сильнее</h3>
+            <p>На встрече покажем бета-версию, пройдем по вашим текущим задачам, разберем, где есть потери времени или контекста, и посмотрим, какие функции действительно дадут ценность вашей команде.</p>
+          </div>
+          <a class="button button-primary" href="https://calendly.com/7641109/30min" target="_blank" rel="noopener noreferrer">Назначить созвон</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">Spread Insight · Discovery-концепт для проп-команд и арбитражных трейдеров</div>
+  </footer>
+</body>
+</html>
